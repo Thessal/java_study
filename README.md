@@ -10,26 +10,21 @@ Toy project for learning Java language & DB
 ## Example
 
 ```
-default > insert 1 a
-default > insert 2 b
-default > select
-default
-Node@682a0b20	1	a
-Node@448139f0	2	b
-default > table table2
-table2 > tables
-[default, table2]
-table2 > insert 3 c
-table2 > insert 4 d
-table2 > table default
-default > select
-default
-Node@682a0b20	1	a
-Node@448139f0	2	b
-default > table table2
-table2 > select
-table2
-Node@7cca494b	3	c
-Node@7ba4f24f	4	d
-table2 > exit
+table test1
+insert 1234 hjkl
+insert 12 asdf
+insert 234 sdfg
+insert 345 qwert
+insert 32 a
+table test2
+insert 12 ni
+insert 23 nm
+insert 2345 sd
+insert 234 s
+insert 32 a
+select * from test1 inner_join test2
+
+Node@3d075dc0	12	asdf
+Node@7cca494b	32	a
+Node@7ba4f24f	234	sdfg
 ```
