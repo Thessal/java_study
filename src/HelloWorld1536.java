@@ -73,7 +73,15 @@ class Parser {
                 }
                 System.out.println("\t" + target_name);
                 for (Node node : target) {
-                    System.out.printf("%s\t%d\t%s\n", node.toString(), node.index, node.data);
+                    System.out.printf("%s\t%d\t", node.toString(), node.index);
+                    Node tmp = node;
+                    while ( true ){
+                        System.out.printf("%s\t", tmp.data);
+                        if (tmp.links.isEmpty())
+                            break;
+                        tmp = node.links.get(0);
+                    }
+                    System.out.println();
                 }
                 break;
             default:
@@ -109,7 +117,9 @@ class Parser {
                     cmp = cur.compareTo(cur2);
                 }
                 if (cmp < 0) {
-                    it.remove(); // no match i.e. cmp == 0
+                    it.remove();
+                } else if (cmp == 0) {
+                    cur.links.add(cur2);
                 }
 
                 if (!(it.hasNext() && it2.hasNext())) { //exit and cleanup
@@ -126,7 +136,62 @@ class Parser {
                 cur = it.next();
             }
         } else if (cfg.containsKey("outer_join")) {
-            System.out.println("Not implemented");
+            Node to_join = table_shallow_copy(repl.tables.get(cfg.get("outer_join")));
+            Collections.sort(output.links);
+            Collections.sort(to_join.links);
+
+
+            Iterator<Node> it = output.links.iterator(), it2 = to_join.links.iterator();
+            if (it.hasNext() && it2.hasNext()) {
+                Node cur = it.next(), cur2 = it2.next();
+                int idx = 0;
+                while (it.hasNext() && it2.hasNext()) {
+                    int cmp = cur.compareTo(cur2);
+                    if (cmp == 0) {
+                        cur.links.add(cur2);
+                        cur = it.next();
+                        cur2 = it2.next();
+                    } else if (cmp < 0) {
+                        Node tmp = new Node(cur2.index, "");
+                        tmp.links.add(cur2);
+                        output.links.add(idx, tmp);
+                        cur2 = it2.next();
+                    } else { //if (cmp > 0) {
+                        cur.links.add(new Node(""));
+                        cur = it.next();
+                    }
+                }
+            }
+
+            while (it.hasNext())
+                it.next().links.add(new Node(""));
+            while (it2.hasNext()){
+                Node tmp = new Node("");
+                tmp.links.add(it2.next());
+                tmp.index = tmp.links.get(0).index;
+                output.links.add( tmp);
+            }
+
+        } else if (cfg.containsKey("join")) {
+            output.links.addAll(repl.tables.get(cfg.get("join")).links);
+            Collections.sort(output.links);
+
+            // unique indices
+            Iterator<Node> it = output.links.iterator();
+            int prev = Integer.MIN_VALUE;
+            while (it.hasNext()) {
+                int curr = it.next().index;
+                if (curr == prev)
+                    it.remove();
+                prev = curr;
+            }
+
+            // comodification is not allowed
+            // Iterator<Node> it = output.links.iterator(), it2= output.links.iterator();
+            // it2.next();
+            // while (it2.hasNext())
+            //     if (it.next().index == it2.next().index)
+            //         it.remove();
         } else {
         }
         return output.links;
